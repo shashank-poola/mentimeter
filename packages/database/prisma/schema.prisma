@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+}
+
+enum QuizStatus {
+  CREATED
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+}
+
+enum SessionStatus {
+  WAITING
+  LIVE
+  ENDED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  image     String?
+  role      Role     @default(ADMIN)
+
+  quizzes   Quiz[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      QuizStatus @default(CREATED)
+
+  joinCode    String     @unique
+  hostId      String
+  host        User       @relation(fields: [hostId], references: [id])
+
+  questions   Question[]
+  sessions    GameSession[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Question {
+  id        String        @id @default(cuid())
+  quizId    String
+  quiz      Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  type      QuestionType
+  text      String
+  options   String[]
+  correct   Int
+  timeLimit Int
+
+  order     Int
+
+  createdAt DateTime @default(now())
+}
+
+model GameSession {
+  id        String        @id @default(cuid())
+  quizId    String
+  quiz      Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  status    SessionStatus @default(WAITING)
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  participants Participant[]
+  results      Result[]
+
+  createdAt DateTime @default(now())
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  nickname  String
+  avatar    String?
+
+  totalScore Int @default(0)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([sessionId, nickname])
+}
+
+model Result {
+  id           String   @id @default(cuid())
+  sessionId    String
+  questionId   String
+
+  session      GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  data         Json
+  totalAnswers Int
+
+  createdAt    DateTime @default(now())
+
+  @@index([sessionId])
+}
