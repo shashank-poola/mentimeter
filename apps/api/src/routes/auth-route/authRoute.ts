@@ -5,7 +5,7 @@ import { checkController } from "../../controller/user-controller/checkControlle
 
 const authRouter = Router();
 
-authRouter.post("/signin", authMiddleware);
+authRouter.post("/signin", signInController);
 
 authRouter.get("/health", checkController);
 

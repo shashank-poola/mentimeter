@@ -7,6 +7,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 export default async function signInController(req: Request, res: Response) {
   const { user, account } = req.body;
 
+  if (!user || !account) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid auth payload",
+    });
+  }
+
   try {
     const provider = account?.provider;
 
@@ -37,14 +44,15 @@ export default async function signInController(req: Request, res: Response) {
     }
 
     if (!JWT_SECRET) {
-      res.status(500).json({ message: "server error" });
+      res.status(500).json({ message: "JWT secret not configured" });
       return;
     }
 
     const jwtPayload = {
+      id: myUser.id,
       name: myUser.name,
       email: myUser.email,
-      id: myUser.id,
+      role: myUser.role,
       provider,
     };
 
