@@ -10,6 +10,13 @@ export default async function signInController(req: Request, res: Response) {
   try {
     const provider = account?.provider;
 
+    if(provider !== "google") {
+      res.status(401).json({ 
+        success: false,
+        message: "Invalid auth provider"
+      });
+    }
+
     const exisitingUser = await db.user.findUnique({
       where: { email: user.email },
     });
@@ -17,22 +24,14 @@ export default async function signInController(req: Request, res: Response) {
     let myUser;
 
     if (exisitingUser) {
-      const updateData = {
-        name: user.name,
-        email: user.email,
-        image: user.image,
-      };
-
-      myUser = await db.user.update({
-        where: { email: user.email },
-        data: updateData,
-      });
+      myUser = exisitingUser
     } else {
       myUser = await db.user.create({
         data: {
           name: user.name,
           email: user.email,
           image: user.image,
+          role: "ADMIN",
         },
       });
     }
