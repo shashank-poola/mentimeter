@@ -11,11 +11,7 @@ router.post("/quiz/:quizId/launch", authMiddleware, launchQuizController);
 
 router.post("/session/:sessionId/next", authMiddleware,nextQuestionController);
 
-router.post(
-  "/session/:sessionId/end",
-  authMiddleware,
-  endSessionController
-);
+router.post("/session/:sessionId/end", authMiddleware, endSessionController);
 
 router.get("/session/:sessionId/leaderboard", authMiddleware, getLiveLeaderboardController);
 
