@@ -35,7 +35,7 @@ export class QuizAction {
     quizId: string;
     role: SESSION_ROLE;
     participantId?: string;
-  }): string {
+  }) {
     const tokenId = QuizAction.generateTokenId();
     const now = Math.floor(Date.now() / 1000);
 
@@ -68,11 +68,7 @@ export class QuizAction {
     return !!quiz;
   }
 
-  static async validateSessionAccess(
-    sessionId: string,
-    userId?: string,
-    participantId?: string
-  ): Promise<boolean> {
+  static async validateSessionAccess( sessionId: string, userId?: string, participantId?: string ) {
     const session = await db.gameSession.findUnique({
       where: { id: sessionId },
       include: {
@@ -133,7 +129,7 @@ export class QuizAction {
     };
   }
 
-  static async deleteQuiz(quizId: string, userId: string): Promise<boolean> {
+  static async deleteQuiz(quizId: string, userId: string) {
     const isOwner = await QuizAction.validateQuizOwnership(userId, quizId);
     if (!isOwner) return false;
 
@@ -142,17 +138,14 @@ export class QuizAction {
   }
 
   static createJoinUrl(joinCode: string): string {
-    return `http://localhost:8000/join/${joinCode}`;
+    return `env.SERVER_PORT/join/${joinCode}`;
   }
 
   static isTokenExpired(payload: SessionTokenPayload): boolean {
     return payload.exp < Math.floor(Date.now() / 1000);
   }
 
-  static async validateParticipantNickname(
-    sessionId: string,
-    nickname: string
-  ): Promise<boolean> {
+  static async validateParticipantNickname( sessionId: string, nickname: string ) {
     const existing = await db.participant.findUnique({
       where: {
         sessionId_nickname: {
