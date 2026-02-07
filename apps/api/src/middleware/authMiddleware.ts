@@ -1,55 +1,43 @@
 import type { NextFunction, Request, Response } from 'express';
 import { env } from '../configs/env';
 import jwt from 'jsonwebtoken';
-import type { AuthUser } from '../types/express';
 
-export default function authMiddleware(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer')) {
-        res.status(401).json({
-            success: false,
-            message: 'Unauthorized',
-        });
-        return;
-    }
-
-    const token = authHeader.split(' ')[1];
+const verifyJwt = (token: string) => {
     const secret = env.JWT_SECRET;
 
     if (!secret) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        });
-        return;
-    }
-
-    if (!token) {
-        res.status(404).json({
-            success: false,
-            message: 'Token not found',
-        });
-        return;
+        throw new Error("JWT_SECRET is not defined");
     }
 
     try {
-        jwt.verify(token, secret, (err, decoded) => {
-            if (err) {
-                res.status(401).json({
-                    success: false,
-                    message: 'Unauthorized',
-                });
-                return;
-            }
-            req.user = decoded as AuthUser;
-            next();
-        });
+        const decoded = jwt.verify(token, secret);
+        return decoded;
     } catch (error) {
-        console.error('Error in auth middleware: ', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        });
-        return;
+        return null;
     }
 }
+
+export const authMiddleware = async ( req: Request, res: Response, next: NextFunction ) => {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        res.status(404).json({
+            "success": false,
+            "data": null,
+            "error": "UNAUTHORIZED"
+        })
+        return;
+    }
+
+    const decoded = verifyJwt(token) as { id: string; role: string } | null;
+    if (!decoded) {
+        res.status(400).json({
+            "success": false,
+            "data": null,
+            "error": "UNAUTHORIZED"
+        })
+        return;
+    };
+
+    next();
+};

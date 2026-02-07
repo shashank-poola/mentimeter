@@ -48,7 +48,6 @@ model Quiz {
   description String?
   status      QuizStatus @default(CREATED)
 
-  joinCode    String     @unique
   hostId      String
   host        User       @relation(fields: [hostId], references: [id])
 
@@ -80,6 +79,7 @@ model GameSession {
   quizId    String
   quiz      Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
+  joinCode    String     @unique
   status    SessionStatus @default(WAITING)
 
   startedAt DateTime?
