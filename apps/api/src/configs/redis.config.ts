@@ -21,6 +21,9 @@ redis.on("error", (err) => {
     console.log("REDIS : client error",err );
 });
 
-
+export async function connectRedis() {
+    if (redis.status === "ready") return;
+    await redis.connect();
+}
 
 export default redis;
