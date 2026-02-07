@@ -1,7 +1,8 @@
 import { db } from "@repo/database";
 import { customAlphabet } from "nanoid";
 import jwt from "jsonwebtoken";
-import { SessionTokenPayload, SESSION_ROLE } from "../types";
+import type { SessionTokenPayload } from "../types";
+import { SESSION_ROLE } from "../types";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -14,7 +15,7 @@ export class QuizAction {
 
     while (attempts < MAX_ATTEMPTS) {
       const code = QuizAction.generateNumericCode();
-      const exists = await db.quiz.findUnique({
+      const exists = await db.gameSession.findUnique({
         where: { joinCode: code },
         select: { id: true },
       });
@@ -89,22 +90,24 @@ export class QuizAction {
   }
 
   static async getSessionByJoinCode(joinCode: string) {
-    return await db.quiz.findUnique({
+    return await db.gameSession.findUnique({
       where: { joinCode },
       select: {
         id: true,
-        title: true,
-        description: true,
         status: true,
-        sessions: {
-          where: { status: { in: ["WAITING", "LIVE"] } },
-          orderBy: { createdAt: "desc" },
-          take: 1,
+        startedAt: true,
+  
+        quiz: {
           select: {
             id: true,
-            status: true,
-            startedAt: true,
-            _count: { select: { participants: true } },
+            title: true,
+            description: true,
+          },
+        },
+  
+        _count: {
+          select: {
+            participants: true,
           },
         },
       },

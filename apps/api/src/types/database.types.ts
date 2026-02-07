@@ -1,5 +1,26 @@
-export type ROLE = "ADMIN";
-export type QuizStatus = "CREATED" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED";
-export type QuestionType = "MCQ" | "TRUE_FALSE";
-export type SessionStatus = "WAITING" | "LIVE" | "ENDED";
-export type SESSION_ROLE = "ADMIN";
+export enum ROLE {
+    ADMIN = "ADMIN",
+}
+  
+export enum QuizStatus {
+    CREATED = "CREATED",
+    SCHEDULED = "SCHEDULED",
+    LIVE = "LIVE",
+    COMPLETED = "COMPLETED",
+    CANCELLED = "CANCELLED",
+}
+  
+export enum QuestionType {
+    MCQ = "MCQ",
+    TRUE_FALSE = "TRUE_FALSE",
+}
+  
+export enum SessionStatus {
+    WAITING = "WAITING",
+    LIVE = "LIVE",
+    ENDED = "ENDED",
+}
+  
+export enum SESSION_ROLE {
+    ADMIN = "ADMIN",
+}

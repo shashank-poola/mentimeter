@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { questionSchema, QuizSchema } from "../../schema/quizSchema";
+import { QuizSchema } from "../../schema/quizSchema";
 import { db } from "@repo/database";
 
 export const publishQuiz = async ( req: Request, res: Response ) => {
@@ -35,6 +35,51 @@ export const publishQuiz = async ( req: Request, res: Response ) => {
             return;
         }
 
+        const { title, description, questions } = parsed.data;
+
+        const quiz = await db.$transaction(async (tx) => {
+            return tx.quiz.create({
+                data: {
+                    title,
+                    description,
+                    hostId: user.id,
+
+                    questions: {
+                        create: questions.map((questions, index) => {
+                            if (questions.correct >= questions.options.length) {
+                                throw new Error("Invalid correct option index");
+                            }
+
+                            return {
+                                text: questions.questionText,
+                                type: questions.type,
+                                options: questions.options,
+                                correct: questions.correct,
+                                timeLimit: questions.timeLimit,
+                                order: index,
+                            };
+                        }),
+                    },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    createdAt: true,
+                    _count: {
+                        select: {
+                            questions: true
+                        },
+                    },
+                },
+            });
+        });
+
+        return res.status(201).json({
+            "success": false,
+            "data": quiz,
+            "error": null
+        });
 
     } catch (error) {
         res.status(500).json({
